@@ -10,8 +10,8 @@ from nerfstudio.pipelines.base_pipeline import VanillaPipelineConfig
 from nerfinternals.model import NeRFInternalModelConfig, NeRFInternalModel
 from nerfinternals.pipeline import InternalsPipelineConfig, InternalVanillaPipeline
 
-nerf_internals_method = TrainerConfig(
-    method_name="vanilla-nerfinternals",
+activation_nerf_blender = TrainerConfig(
+    method_name="activation-nerf",
     pipeline=InternalsPipelineConfig(
         datamanager=VanillaDataManagerConfig(
             dataparser=BlenderDataParserConfig(),

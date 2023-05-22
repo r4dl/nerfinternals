@@ -1,5 +1,6 @@
 [project]
 name = "nerfinternals"
+version = "0.1.1"
 
 dependencies = [
     "nerfstudio" # you may want to consider pinning the version, ie "nerfstudio==0.1.19"
@@ -9,4 +10,4 @@ dependencies = [
 include = ["nerfinternals*"]
 
 [project.entry-points.'nerfstudio.method_configs']
-my-method = 'nerfinternals.config:nerfinternals'
+internals_nerf_blender = 'nerfinternals.internals_config:activation_nerf_blender'
