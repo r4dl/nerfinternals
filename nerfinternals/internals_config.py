@@ -7,7 +7,7 @@ from nerfstudio.engine.optimizers import AdamOptimizerConfig, RAdamOptimizerConf
 from nerfstudio.engine.trainer import TrainerConfig
 from nerfstudio.models.vanilla_nerf import NeRFModel, VanillaModelConfig
 from nerfstudio.pipelines.base_pipeline import VanillaPipelineConfig
-from nerfinternals.model import NeRFInternalModelConfig, NeRFInternalModel
+from nerfinternals.nerf_model import NeRFInternalModelConfig, NeRFInternalModel
 from nerfinternals.pipeline import InternalsPipelineConfig, InternalVanillaPipeline
 
 activation_nerf_blender = TrainerConfig(

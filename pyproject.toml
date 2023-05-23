@@ -3,7 +3,7 @@ name = "nerfinternals"
 version = "0.1.1"
 
 dependencies = [
-    "nerfstudio" # you may want to consider pinning the version, ie "nerfstudio==0.1.19"
+    "nerfstudio=0.2.1" # you may want to consider pinning the version, ie "nerfstudio==0.1.19"
 ]
 
 [tool.setuptools.packages.find]
