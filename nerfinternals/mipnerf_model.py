@@ -38,9 +38,12 @@ from nerfstudio.model_components.renderers import (
 )
 from nerfstudio.models.base_model import Model, ModelConfig
 from nerfstudio.utils import colormaps, colors, misc
+from nerfstudio.model_components.scene_colliders import NearFarCollider
 
+from nerfinternals.nerf_model import NeRFInternalModelConfig
 from nerfinternals.nerf_field import aNeRFField
-
+from nerfinternals.ndc_collider import NDCCollider
+from time import time
 
 class MipNerfInternalModel(Model):
     """mip-NeRF model
@@ -51,7 +54,7 @@ class MipNerfInternalModel(Model):
 
     def __init__(
         self,
-        config: ModelConfig,
+        config: NeRFInternalModelConfig,
         **kwargs,
     ) -> None:
         self.field = None
@@ -59,7 +62,20 @@ class MipNerfInternalModel(Model):
 
     def populate_modules(self):
         """Set the fields and modules"""
-        super().populate_modules()
+        # we don't do this here, we (might) use a custom collider
+        # super().populate_modules()
+        if self.config.enable_collider:
+            if self.config.use_ndc_collider:
+                assert 'hwf' in self.kwargs
+                hwf = self.kwargs.get('hwf')
+                self.collider = NDCCollider(
+                    h=int(hwf[0]), w=int(hwf[1]), focal=hwf[2]
+                )
+        else:
+            assert self.config.collider_params is not None
+            self.collider = NearFarCollider(
+                near_plane=self.config.collider_params["near_plane"], far_plane=self.config.collider_params["far_plane"]
+            )
 
         # setting up fields
         position_encoding = NeRFEncoding(
@@ -135,20 +151,17 @@ class MipNerfInternalModel(Model):
             ray_bundle = self.collider(ray_bundle)
 
         return self.get_outputs_fine(ray_bundle,
-                                     act_coarse,
+                                     act_coarse=act_coarse,
                                      act_fct=act_fct)
 
-    def get_outputs_fine(self, ray_bundle: RayBundle, weights_coarse: torch.Tensor,
+    def get_outputs_fine(self, ray_bundle: RayBundle,
                          act_coarse: Optional[torch.Tensor] = None,
-                         pdf_samples: Optional[RaySamples] = None,
                          act_fct: Optional[Callable] = None):
         """ derives a density from the activations and uses this to derive a pdf-density
 
         Args:
             ray_bundle: Ray bundle (parameters)
-            weights_coarse: weights for deriving a pdf-density
             act_coarse: activation to derive weights from
-            pdf_samples: optional samples to use instead of uniform samples
             act_fct: function to apply to the activations before normalizing
 
         Returns:
@@ -237,7 +250,7 @@ class MipNerfInternalModel(Model):
     def get_loss_dict(self, outputs, batch, metrics_dict=None):
         image = batch["image"].to(self.device)
         rgb_loss_coarse = self.rgb_loss(image, outputs["rgb_coarse"])
-        rgb_loss_fine = self.rgb_loss(image, outputs["rgb_fine"])
+        rgb_loss_fine = self.rgb_loss(image, outputs["rgb"])
         loss_dict = {"rgb_loss_coarse": rgb_loss_coarse, "rgb_loss_fine": rgb_loss_fine}
         loss_dict = misc.scale_dict(loss_dict, self.config.loss_coefficients)
         return loss_dict
@@ -255,12 +268,12 @@ class MipNerfInternalModel(Model):
 
         fine_psnr = self.psnr(image, rgb_fine)
         fine_ssim = self.ssim(image, rgb_fine)
-        fine_lpips = self.lpips(image, rgb_fine)
+        #fine_lpips = self.lpips(image, rgb_fine)
 
         metrics_dict = {
             "psnr": float(fine_psnr.item()),
             "ssim": float(fine_ssim.item()),
-            "lpips": float(fine_lpips.item()),
+            "lpips": float(0),
         }
         return metrics_dict, None
 
@@ -284,3 +297,87 @@ class MipNerfInternalModel(Model):
 
         outs = self.field.get_activation_in_layer(ray_samples_uniform, layer)
         return outs.mean(-1)
+
+    @torch.no_grad()
+    def get_outputs_for_camera_ray_bundle_activationinformed(self, camera_ray_bundle: RayBundle,
+                                                             layer: Optional[int] = 0,
+                                                             upsample: bool = False,
+                                                             upsample_res: List[int] = None,
+                                                             num_samples: Optional[int] = None,
+                                                             act_fct: Optional[Callable] = None) -> (
+            Dict[str, torch.Tensor], Dict):
+        # NERF AND MIPNERF
+        """Takes in camera parameters and computes the output of the model.
+
+        Args:
+            camera_ray_bundle: ray bundle to calculate outputs over
+            num_samples: how many samples for evaluating the activation
+            layer: analyze activation of this layer
+        """
+        num_rays_per_chunk = self.config.eval_num_rays_per_chunk
+        image_height, image_width = camera_ray_bundle.origins.shape[:2]
+
+        # profiling purposes
+        inner_start = time()
+
+        if upsample:
+            activation_map: torch.Tensor = torch.zeros(size=upsample_res, device=camera_ray_bundle.origins.device)
+            num_samples = upsample_res[-1]
+            activation_resolution_factor = [image_width // upsample_res[0], image_height // upsample_res[1]]
+        else:
+            activation_map: torch.Tensor = torch.zeros(size=[image_width, image_height, num_samples],
+                                                       device=camera_ray_bundle.origins.device)
+            activation_resolution_factor = [1, 1]
+
+        for i in range(0, activation_map.shape[0] * activation_map.shape[1], num_rays_per_chunk):
+            start_idx = i
+            end_idx = min(i + num_rays_per_chunk, activation_map.shape[0] * activation_map.shape[1])
+            ray_bundle = camera_ray_bundle[::activation_resolution_factor[0],
+                         ::activation_resolution_factor[1]].get_row_major_sliced_ray_bundle(start_idx, end_idx)
+            activation_map.reshape(-1, num_samples)[start_idx:end_idx] = self.forward_activation_layer(
+                ray_bundle=ray_bundle, layer=layer,
+                num_samples=num_samples)
+        t_act = time() - inner_start
+        # another pass, this time with activations as density guide
+        inner_start = time()
+
+        n_s: int = self.config.num_proposal_samples_per_ray[
+            0] if self.config.__class__.__name__ in 'NerfactoModelConfig' else self.config.num_coarse_samples
+
+        if upsample:
+            ups = torch.nn.Upsample(size=(image_height, image_width, n_s), mode='nearest')
+            activation_map = ups(activation_map.unsqueeze(0).unsqueeze(0)).squeeze()
+
+        # save index arrays (coarse and fine)
+        outputs = {}
+
+        outputs['rgb'] = torch.zeros((image_height, image_width, 3)).to(self.device)
+        outputs['depth'] = torch.zeros((image_height, image_width, 1)).to(self.device)
+        outputs['accumulation'] = torch.zeros((image_height, image_width, 1)).to(self.device)
+
+        num_rays: int = image_height * image_width
+        for i in range(0, num_rays, num_rays_per_chunk):
+            start_idx = i
+            end_idx = i + num_rays_per_chunk
+            # outputs using the rays from indexed the bundle
+            # re-use activation
+            out = self.forward_fine(
+                ray_bundle=camera_ray_bundle.get_row_major_sliced_ray_bundle(start_idx, end_idx),
+                act_coarse=activation_map.reshape(-1, n_s)[start_idx:end_idx],
+                act_fct=act_fct)
+            # overwrite based on index tuple
+            outputs['rgb'].reshape(-1, 3)[start_idx:end_idx] = out['rgb']
+            outputs['depth'].reshape(-1, 1)[start_idx:end_idx] = out['depth']
+            outputs['accumulation'].reshape(-1, 1)[start_idx:end_idx] = out['accumulation']
+        t_fine = time() - inner_start
+        t_coarse = 0.
+
+        # iterate over all index rays which fulfill the condition
+        # save the metrics
+        metrics = {
+            't_act': t_act,
+            't_coarse': t_coarse,
+            't_fine': t_fine,
+        }
+        outputs["activation_coarse"] = activation_map.mean(-1)
+        return outputs, metrics

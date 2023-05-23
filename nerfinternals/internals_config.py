@@ -1,23 +1,15 @@
 from __future__ import annotations
 
+from nerfstudio.data.dataparsers.blender_dataparser import BlenderDataParserConfig
+from nerfstudio.data.datamanagers.base_datamanager import VanillaDataManagerConfig
+from nerfstudio.engine.optimizers import RAdamOptimizerConfig
+
 from nerfstudio.engine.trainer import TrainerConfig
 from nerfstudio.plugins.types import MethodSpecification
 
-from nerfstudio.data.datamanagers.base_datamanager import VanillaDataManagerConfig
-from nerfstudio.data.dataparsers.blender_dataparser import BlenderDataParserConfig
-from nerfstudio.engine.optimizers import AdamOptimizerConfig, RAdamOptimizerConfig
-from nerfstudio.engine.trainer import TrainerConfig
-from nerfstudio.models.vanilla_nerf import NeRFModel, VanillaModelConfig
-from nerfstudio.pipelines.base_pipeline import VanillaPipelineConfig
 from nerfinternals.nerf_model import NeRFInternalModelConfig, NeRFInternalModel
 from nerfinternals.mipnerf_model import MipNerfInternalModel
 from nerfinternals.pipeline import InternalsPipelineConfig, InternalVanillaPipeline
-
-
-from nerfstudio.plugins.registry_dataparser import DataParserSpecification
-from nerfinternals.llff_dataparser import LLFFDataParserConfig
-
-llff = DataParserSpecification(config=LLFFDataParserConfig)
 
 activation_nerf = MethodSpecification(
     config=TrainerConfig(

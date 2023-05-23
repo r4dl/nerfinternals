@@ -276,6 +276,17 @@ class InternalVanillaPipeline(Pipeline):
         # TODO(ethan): assert that key names don't overlap
         return {**datamanager_params, **model_params}
 
+    def create_overarching_dir(self, directory: str, folder_name: str, idx: str) -> str:
+        assert os.path.exists(directory)
+        img_directory = os.path.join(directory, folder_name)
+        if not os.path.exists(img_directory):
+            os.mkdir(img_directory)
+        # create the per-img subdirectory
+        path_to_images = os.path.join(img_directory, idx)
+        if not os.path.exists(path_to_images):
+            os.mkdir(path_to_images)
+        return path_to_images
+
     @profiler.time_function
     def activation_derived_density_NeRF(self, save_dir: str, options: ActivationDerivedDensity):
         """Use activations as proxy for where importance weighted samples are needed

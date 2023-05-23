@@ -31,7 +31,8 @@ from nerfstudio.models.base_model import Model, ModelConfig
 from nerfstudio.utils import colormaps, colors, misc
 
 from nerfinternals.nerf_field import aNeRFField
-
+from nerfstudio.model_components.scene_colliders import NearFarCollider
+from nerfinternals.ndc_collider import NDCCollider
 
 @dataclass
 class NeRFInternalModelConfig(ModelConfig):
@@ -78,7 +79,20 @@ class NeRFInternalModel(Model):
 
     def populate_modules(self):
         """Set the fields and modules"""
-        super().populate_modules()
+        # we don't do this here, we (might) use a custom collider
+        # super().populate_modules()
+        if self.config.enable_collider:
+            if self.config.use_ndc_collider:
+                assert 'hwf' in self.kwargs
+                hwf = self.kwargs.get('hwf')
+                self.collider = NDCCollider(
+                    h=int(hwf[0]), w=int(hwf[1]), focal=hwf[2]
+                )
+        else:
+            assert self.config.collider_params is not None
+            self.collider = NearFarCollider(
+                near_plane=self.config.collider_params["near_plane"], far_plane=self.config.collider_params["far_plane"]
+            )
 
         # fields
         position_encoding = NeRFEncoding(
@@ -324,12 +338,12 @@ class NeRFInternalModel(Model):
 
         fine_psnr = self.psnr(image, rgb_fine)
         fine_ssim = self.ssim(image, rgb_fine)
-        fine_lpips = self.lpips(image, rgb_fine)
+        #fine_lpips = self.lpips(image, rgb_fine)
 
         metrics_dict = {
             "psnr": float(fine_psnr.item()),
             "ssim": float(fine_ssim.item()),
-            "lpips": float(fine_lpips.item()),
+            "lpips": float(0),
         }
         return metrics_dict, None
 

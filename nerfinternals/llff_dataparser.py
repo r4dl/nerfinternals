@@ -39,11 +39,11 @@ class LLFFDataParserConfig(DataParserConfig):
 
     _target: Type = field(default_factory=lambda: LLFF)
     """target class to instantiate"""
-    data: Path = Path("data/blender/lego")
+    data: Path = Path()
     """Directory specifying location of data."""
     scale_factor: float = 1.0
     """How much to scale the camera origins by."""
-    downscale_factor: Optional[int] = None
+    downscale_factor: Optional[int] = 4
     """How much to downscale images. If not set, images are chosen such that the max dimension is <1600px."""
     train_split_fraction: float = 0.9
     """The fraction of images to use for training. The remaining images are for eval."""
@@ -51,7 +51,7 @@ class LLFFDataParserConfig(DataParserConfig):
 @dataclass
 class LLFF(DataParser):
     """LLFF Dataset
-    Some of this code comes from https://github.com/yenchenlin/nerf-pytorch/blob/master/load_blender.py#L37.
+    Some (most) of this code comes from https://github.com/yenchenlin/nerf-pytorch/blob/master/load_blender.py#L37.
     """
 
     config: LLFFDataParserConfig
@@ -64,7 +64,8 @@ class LLFF(DataParser):
 
     def _generate_dataparser_outputs(self, split="train"):
 
-        # Code directly taken from nerfstudio-pytorch
+        # Code directly taken from nerf-pytorch
+        # https://github.com/yenchenlin/nerf-pytorch
         def normalize(x):
             return x / np.linalg.norm(x)
 
@@ -121,7 +122,6 @@ class LLFF(DataParser):
         poses[2, 4, :] = poses[2, 4, :] * 1. / self.downscale_factor
 
         # sanity check print
-        print('Loaded', self.config.data, bds.min(), bds.max())
         poses = np.concatenate([poses[:, 1:2, :], -poses[:, 0:1, :], poses[:, 2:, :]], 1)
         poses = np.moveaxis(poses, -1, 0).astype(np.float32)
         bds = np.moveaxis(bds, -1, 0).astype(np.float32)

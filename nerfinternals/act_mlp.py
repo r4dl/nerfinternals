@@ -18,8 +18,7 @@ Multi Layer Perceptron
 from typing import Optional, Set, Tuple
 
 import torch
-from torch import nn
-from torchtyping import TensorType
+from torch import Tensor, nn
 from typing import List
 
 from nerfstudio.field_components.base_field_component import FieldComponent
@@ -78,7 +77,7 @@ class aMLP(FieldComponent):
             layers.append(nn.Linear(self.layer_width, self.out_dim))
         self.layers = nn.ModuleList(layers)
 
-    def forward(self, in_tensor: TensorType["bs":..., "in_dim"]) -> TensorType["bs":..., "out_dim"]:
+    def forward(self, in_tensor: Tensor) -> Tensor:
         """Process input with a multilayer perceptron.
 
         Args:
@@ -99,9 +98,9 @@ class aMLP(FieldComponent):
             x = self.out_activation(x)
         return x
 
-    def get_activation_in_layer(self, in_tensor: TensorType["bs":..., "in_dim"],
+    def get_activation_in_layer(self, in_tensor: Tensor,
                                 layer_idx: int,
-                                apply_activation: Optional[bool] = True) -> TensorType["bs":...]:
+                                apply_activation: Optional[bool] = True) -> Tensor:
         """Process input with a multilayer perceptron. Returns activations in the specified layer
         Args:
             in_tensor: Network input
