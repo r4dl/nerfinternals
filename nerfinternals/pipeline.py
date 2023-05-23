@@ -49,6 +49,9 @@ from nerfstudio.data.datamanagers.base_datamanager import (
 from nerfstudio.engine.callbacks import TrainingCallback, TrainingCallbackAttributes
 from nerfstudio.models.base_model import Model, ModelConfig
 from nerfstudio.utils import profiler
+from nerfstudio.pipelines.base_pipeline import Pipeline
+
+from nerfinternals.eval import ActivationDerivedDensity
 
 
 def module_wrapper(ddp_or_model: Union[DDP, Model]) -> Model:
@@ -58,159 +61,6 @@ def module_wrapper(ddp_or_model: Union[DDP, Model]) -> Model:
     if isinstance(ddp_or_model, DDP):
         return cast(Model, ddp_or_model.module)
     return ddp_or_model
-
-
-class Pipeline(nn.Module):
-    """The intent of this class is to provide a higher level interface for the Model
-    that will be easy to use for our Trainer class.
-
-    This class will contain high level functions for the model like getting the loss
-    dictionaries and visualization code. It should have ways to get the next iterations
-    training loss, evaluation loss, and generate whole images for visualization. Each model
-    class should be 1:1 with a pipeline that can act as a standardized interface and hide
-    differences in how each model takes in and outputs data.
-
-    This class's function is to hide the data manager and model classes from the trainer,
-    worrying about:
-    1) Fetching data with the data manager
-    2) Feeding the model the data and fetching the loss
-    Hopefully this provides a higher level interface for the trainer to use, and
-    simplifying the model classes, which each may have different forward() methods
-    and so on.
-
-    Args:
-        config: configuration to instantiate pipeline
-        device: location to place model and data
-        test_mode:
-            'train': loads train/eval datasets into memory
-            'test': loads train/test dataset into memory
-            'inference': does not load any dataset into memory
-        world_size: total number of machines available
-        local_rank: rank of current machine
-
-    Attributes:
-        datamanager: The data manager that will be used
-        model: The model that will be used
-    """
-
-    # pylint: disable=abstract-method
-
-    datamanager: DataManager
-    _model: Model
-    world_size: int
-
-    @property
-    def model(self):
-        """Returns the unwrapped model if in ddp"""
-        return module_wrapper(self._model)
-
-    @property
-    def device(self):
-        """Returns the device that the model is on."""
-        return self.model.device
-
-    def load_state_dict(self, state_dict: Mapping[str, Any], strict: bool = True):
-        is_ddp_model_state = True
-        model_state = {}
-        for key, value in state_dict.items():
-            if key.startswith("_model."):
-                # remove the "_model." prefix from key
-                model_state[key[len("_model.") :]] = value
-                # make sure that the "module." prefix comes from DDP,
-                # rather than an attribute of the model named "module"
-                if not key.startswith("_model.module."):
-                    is_ddp_model_state = False
-        # remove "module." prefix added by DDP
-        if is_ddp_model_state:
-            model_state = {key[len("module.") :]: value for key, value in model_state.items()}
-
-        pipeline_state = {key: value for key, value in state_dict.items() if not key.startswith("_model.")}
-        self.model.load_state_dict(model_state, strict=strict)
-        super().load_state_dict(pipeline_state, strict=False)
-
-    def create_overarching_dir(self, directory: str, folder_name: str, idx: str) -> str:
-        assert os.path.exists(directory)
-        img_directory = os.path.join(directory, folder_name)
-        if not os.path.exists(img_directory):
-            os.mkdir(img_directory)
-        # create the per-img subdirectory
-        path_to_images = os.path.join(img_directory, idx)
-        if not os.path.exists(path_to_images):
-            os.mkdir(path_to_images)
-        return path_to_images
-
-    @profiler.time_function
-    def get_train_loss_dict(self, step: int):
-        """This function gets your training loss dict. This will be responsible for
-        getting the next batch of data from the DataManager and interfacing with the
-        Model class, feeding the data to the model's forward function.
-
-        Args:
-            step: current iteration step to update sampler if using DDP (distributed)
-        """
-        if self.world_size > 1 and step:
-            assert self.datamanager.train_sampler is not None
-            self.datamanager.train_sampler.set_epoch(step)
-        ray_bundle, batch = self.datamanager.next_train(step)
-        model_outputs = self.model(ray_bundle, batch)
-        metrics_dict = self.model.get_metrics_dict(model_outputs, batch)
-        loss_dict = self.model.get_loss_dict(model_outputs, batch, metrics_dict)
-
-        return model_outputs, loss_dict, metrics_dict
-
-    @profiler.time_function
-    def get_eval_loss_dict(self, step: int):
-        """This function gets your evaluation loss dict. It needs to get the data
-        from the DataManager and feed it to the model's forward function
-
-        Args:
-            step: current iteration step
-        """
-        self.eval()
-        if self.world_size > 1:
-            assert self.datamanager.eval_sampler is not None
-            self.datamanager.eval_sampler.set_epoch(step)
-        ray_bundle, batch = self.datamanager.next_eval(step)
-        model_outputs = self.model(ray_bundle, batch)
-        metrics_dict = self.model.get_metrics_dict(model_outputs, batch)
-        loss_dict = self.model.get_loss_dict(model_outputs, batch, metrics_dict)
-        self.train()
-        return model_outputs, loss_dict, metrics_dict
-
-    @abstractmethod
-    @profiler.time_function
-    def get_eval_image_metrics_and_images(self, step: int):
-        """This function gets your evaluation loss dict. It needs to get the data
-        from the DataManager and feed it to the model's forward function
-
-        Args:
-            step: current iteration step
-        """
-
-    @abstractmethod
-    @profiler.time_function
-    def get_average_eval_image_metrics(self, step: Optional[int] = None):
-        """Iterate over all the images in the eval dataset and get the average."""
-
-    def load_pipeline(self, loaded_state: Dict[str, Any], step: int) -> None:
-        """Load the checkpoint from the given path
-
-        Args:
-            loaded_state: pre-trained model state dict
-            step: training step of the loaded checkpoint
-        """
-
-    def get_training_callbacks(
-        self, training_callback_attributes: TrainingCallbackAttributes
-    ) -> List[TrainingCallback]:
-        """Returns the training callbacks from both the Dataloader and the Model."""
-
-    def get_param_groups(self) -> Dict[str, List[Parameter]]:
-        """Get the param groups for the pipeline.
-
-        Returns:
-            A list of dictionaries containing the pipeline's param groups.
-        """
 
 
 @dataclass
@@ -427,7 +277,7 @@ class InternalVanillaPipeline(Pipeline):
         return {**datamanager_params, **model_params}
 
     @profiler.time_function
-    def activation_derived_density_NeRF(self, save_dir: str):
+    def activation_derived_density_NeRF(self, save_dir: str, options: ActivationDerivedDensity):
         """Use activations as proxy for where importance weighted samples are needed
 
         Args:
@@ -437,17 +287,17 @@ class InternalVanillaPipeline(Pipeline):
 
         # the three functions we propose
         activation_functions: List[Tuple[str, Callable]] = [
-            ('std_half_sq', lambda x: torch.relu((x.mean(-1, keepdim=True) - x.std(-1, keepdim=True) / 2) - x) ** 2),
             ('std', lambda x: torch.relu((x.mean(-1, keepdim=True) - x.std(-1, keepdim=True)) - x)),
             ('std_half', lambda x: torch.relu((x.mean(-1, keepdim=True) - x.std(-1, keepdim=True) / 2) - x)),
+            ('std_half_sq', lambda x: torch.relu((x.mean(-1, keepdim=True) - x.std(-1, keepdim=True) / 2) - x) ** 2),
         ]
-        run_normal: bool = True
+        run_normal: bool = options.run_normal
 
         for camera_ray_bundle, batch in self.datamanager.fixed_indices_eval_dataloader:
             # create a folder for each image
             path_to_images_: str = self.create_overarching_dir(
                 directory=save_dir,
-                folder_name='eval-less-samples',
+                folder_name=options.output_dir,
                 idx=f'{batch["image_idx"]:03}')
 
             # first: get outputs & metrics normally
@@ -476,54 +326,54 @@ class InternalVanillaPipeline(Pipeline):
 
             # downsample by a factor of 2
             upsample_resolution: List[int] = [b // 2 for b in batch['image'].shape[:2]] + [n_s//2]
+            upsample = options.upsample
+            for layer in list(options.layer):
+                for fct_idx in options.fct:
+                    run_str, run_fct = activation_functions[fct_idx]
+                    exp_name: str = f'layer_{layer:02}_ups_{int(upsample)}_fct_{run_str}'
+                    path_to_images = os.path.join(path_to_images_, exp_name)
+                    if not os.path.exists(path_to_images):
+                        os.mkdir(path_to_images)
+                    # second: get outputs optimized
+                    inner_start = time()
+                    outputs_optimized, quant_metr = self.model.get_outputs_for_camera_ray_bundle_activationinformed(
+                        camera_ray_bundle,
+                        layer=layer,
+                        num_samples=n_s,
+                        upsample=upsample,
+                        upsample_res=upsample_resolution,
+                        act_fct=run_fct)
+                    t_optimized = time() - inner_start
 
-            for upsample in [False, True]:
-                for layer in [0, 1, 2]:
-                    for run_str, run_fct in activation_functions:
-                        exp_name: str = f'layer_{layer:02}_ups_{int(upsample)}_fct_{run_str}'
-                        path_to_images = os.path.join(path_to_images_, exp_name)
-                        if not os.path.exists(path_to_images):
-                            os.mkdir(path_to_images)
-                        # second: get outputs optimized
-                        inner_start = time()
-                        outputs_optimized, quant_metr = self.model.get_outputs_for_camera_ray_bundle_activationinformed(
-                            camera_ray_bundle,
-                            layer=layer,
-                            num_samples=n_s,
-                            upsample=upsample,
-                            upsample_res=upsample_resolution,
-                            act_fct=run_fct)
-                        t_optimized = time() - inner_start
+                    save_image(outputs_optimized["rgb"].permute(-1, 0, 1),
+                               os.path.join(path_to_images, f"ours.png"))
 
-                        save_image(outputs_optimized["rgb"].permute(-1, 0, 1),
-                                   os.path.join(path_to_images, f"ours.png"))
+                    save_image(batch['image'].permute((-1, 0, 1)), os.path.join(path_to_images, f'target.png'))
 
-                        save_image(batch['image'].permute((-1, 0, 1)), os.path.join(path_to_images, f'target.png'))
+                    metrics_optimized, _ = self.model.get_image_metrics_and_images(outputs_optimized, batch)
+                    metrics_optimized["quantitative"] = quant_metr
 
-                        metrics_optimized, _ = self.model.get_image_metrics_and_images(outputs_optimized, batch)
-                        metrics_optimized["quantitative"] = quant_metr
+                    # save normal pipeline metrics into dict
+                    metrics = {}
+                    metrics_time = {
+                        "t_normal": t_normal,
+                        "t_optimized": t_optimized,
+                        "percentage": t_optimized / t_normal,
+                    }
+                    if metrics_normal is not None:
+                        metrics["normal"] = metrics_normal
+                    metrics["optimized"] = metrics_optimized
+                    metrics["time"] = metrics_time
 
-                        # save normal pipeline metrics into dict
-                        metrics = {}
-                        metrics_time = {
-                            "t_normal": t_normal,
-                            "t_optimized": t_optimized,
-                            "percentage": t_optimized / t_normal,
-                        }
-                        if metrics_normal is not None:
-                            metrics["normal"] = metrics_normal
-                        metrics["optimized"] = metrics_optimized
-                        metrics["time"] = metrics_time
+                    metrics_all[exp_name] = {
+                        "t": t_optimized,
+                        "metrics": metrics_optimized
+                    }
+                    print(f'{metrics_optimized["psnr"]:.3f}, layer_{layer} ups_{int(upsample)}, {run_str}')
 
-                        metrics_all[exp_name] = {
-                            "t": t_optimized,
-                            "metrics": metrics_optimized
-                        }
-                        print(f'{metrics_optimized["psnr"]:.3f}, layer_{layer} ups_{int(upsample)}, {run_str}')
-
-                        # write to json
-                        with open(os.path.join(path_to_images, 'stats.json'), "w") as outfile:
-                            outfile.write(json.dumps(metrics, indent=2))
+                    # write to json
+                    with open(os.path.join(path_to_images, 'stats.json'), "w") as outfile:
+                        outfile.write(json.dumps(metrics, indent=2))
             with open(os.path.join(path_to_images_, 'stats.json'), "w") as outfile:
                 outfile.write(json.dumps(metrics_all, indent=2))
             print(f'finished image {batch["image_idx"]:03}')

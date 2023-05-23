@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Tuple, Type, Optional, Callable, Literal
+from time import time
 
 import torch
 from torch.nn import Parameter
@@ -18,7 +19,6 @@ from nerfstudio.configs.config_utils import to_immutable_dict
 from nerfstudio.field_components.encodings import NeRFEncoding
 from nerfstudio.field_components.field_heads import FieldHeadNames
 from nerfstudio.field_components.temporal_distortions import TemporalDistortionKind
-from nerfstudio.fields.vanilla_nerf_field import NeRFField
 from nerfstudio.model_components.losses import MSELoss
 from nerfstudio.field_components.spatial_distortions import SceneContraction
 from nerfstudio.model_components.ray_samplers import PDFSampler, UniformSampler
@@ -29,6 +29,8 @@ from nerfstudio.model_components.renderers import (
 )
 from nerfstudio.models.base_model import Model, ModelConfig
 from nerfstudio.utils import colormaps, colors, misc
+
+from nerfinternals.nerf_field import aNeRFField
 
 
 @dataclass
@@ -52,6 +54,7 @@ class NeRFInternalModelConfig(ModelConfig):
     use_ndc_collider: bool = False
     """Whether to sample in NDC space as proposed by NeRF"""
 
+
 class NeRFInternalModel(Model):
     """Vanilla NeRF model
 
@@ -60,9 +63,9 @@ class NeRFInternalModel(Model):
     """
 
     def __init__(
-        self,
-        config: NeRFInternalModelConfig,
-        **kwargs,
+            self,
+            config: NeRFInternalModelConfig,
+            **kwargs,
     ) -> None:
         self.field_coarse = None
         self.field_fine = None
@@ -92,14 +95,13 @@ class NeRFInternalModel(Model):
             else:
                 self.scene_contraction = SceneContraction()
 
-
-        self.field_coarse = NeRFField(
+        self.field_coarse = aNeRFField(
             position_encoding=position_encoding,
             direction_encoding=direction_encoding,
             spatial_distortion=self.scene_contraction,
         )
 
-        self.field_fine = NeRFField(
+        self.field_fine = aNeRFField(
             position_encoding=position_encoding,
             direction_encoding=direction_encoding,
             spatial_distortion=self.scene_contraction,
@@ -151,7 +153,8 @@ class NeRFInternalModel(Model):
         if self.collider is not None:
             ray_bundle = self.collider(ray_bundle)
 
-        return self.get_outputs_optimized(ray_bundle, layer_idx, prop_net_index, density_fct, num_samples_layers, activation)
+        return self.get_outputs_optimized(ray_bundle, layer_idx, prop_net_index, density_fct, num_samples_layers,
+                                          activation)
 
     @torch.no_grad()
     def forward_activation_layer(self, ray_bundle: RayBundle,
@@ -188,7 +191,8 @@ class NeRFInternalModel(Model):
         if self.collider is not None:
             ray_bundle = self.collider(ray_bundle)
 
-        return self.get_outputs_fine(ray_bundle, weights_coarse=None, act_coarse=act_coarse, pdf_samples=None,
+        return self.get_outputs_fine(ray_bundle,
+                                     act_coarse=act_coarse,
                                      act_fct=act_fct)
 
     def get_outputs(self, ray_bundle: RayBundle):
@@ -238,16 +242,14 @@ class NeRFInternalModel(Model):
         }
         return outputs
 
-    def get_outputs_fine(self, ray_bundle: RayBundle, weights_coarse: torch.Tensor,
+    def get_outputs_fine(self, ray_bundle: RayBundle,
                          act_coarse: Optional[torch.Tensor] = None,
                          act_fct: Optional[Callable] = None) -> Dict[str, torch.Tensor]:
         """ derives a density from the activations and uses this to derive a pdf-density
 
         Args:
             ray_bundle: Ray bundle (parameters)
-            weights_coarse: weights for deriving a pdf-density
             act_coarse: activation to derive weights from
-            pdf_samples: optional samples to use instead of uniform samples
             act_fct: function to apply to the activations before normalizing
 
         Returns:
@@ -259,25 +261,22 @@ class NeRFInternalModel(Model):
         num_samples: int = self.sampler_uniform.num_samples if act_coarse is None else act_coarse.shape[-1]
         ray_samples_uniform = self.sampler_uniform(ray_bundle, num_samples=num_samples)
         # if the activation is not None, use it
-        if act_coarse is not None:
-            # apply the function to the activations
-            if act_fct is not None:
-                weights_ray_act = act_fct(act_coarse)
-            else:
-                weights_ray_act = torch.relu((act_coarse.mean(-1, keepdim=True) - (act_coarse.std(-1, keepdim=True)/2))
-                                         - act_coarse)**2
-            # derive weights from the activations
-            weights_coarse_act = ray_samples_uniform.get_weights(weights_ray_act.unsqueeze(-1))
-            samples: RaySamples = ray_samples_uniform
 
-            # normalize weights to 1
-            weights_coarse_act /= weights_coarse_act.sum(-2, keepdim=True)
-            # obtain a pdf-distributed samples from the activations
-            ray_samples_pdf = self.sampler_pdf(ray_bundle, samples, weights_coarse_act,
-                                               num_samples=self.sampler_pdf.num_samples)
-            # num_samples=self.sampler_pdf.num_samples + self.sampler_uniform.num_samples // 2)
+        if act_fct is not None:
+            weights_ray_act = act_fct(act_coarse)
         else:
-            ray_samples_pdf = self.sampler_pdf(ray_bundle, ray_samples_uniform, weights_coarse.unsqueeze(-1))
+            weights_ray_act = torch.relu((act_coarse.mean(-1, keepdim=True) - (act_coarse.std(-1, keepdim=True) / 2))
+                                         - act_coarse) ** 2
+        # derive weights from the activations
+        weights_coarse_act = ray_samples_uniform.get_weights(weights_ray_act.unsqueeze(-1))
+        samples: RaySamples = ray_samples_uniform
+
+        # normalize weights to 1
+        weights_coarse_act /= weights_coarse_act.sum(-2, keepdim=True)
+        # obtain a pdf-distributed samples from the activations
+        ray_samples_pdf = self.sampler_pdf(ray_bundle, samples, weights_coarse_act,
+                                           num_samples=self.sampler_pdf.num_samples)
+        # num_samples=self.sampler_pdf.num_samples + self.sampler_uniform.num_samples // 2)
 
         if self.temporal_distortion is not None:
             offsets = self.temporal_distortion(ray_samples_pdf.frustums.get_positions(), ray_samples_pdf.times)
@@ -306,14 +305,14 @@ class NeRFInternalModel(Model):
         image = batch["image"].to(device)
 
         rgb_loss_coarse = self.rgb_loss(image, outputs["rgb_coarse"])
-        rgb_loss_fine = self.rgb_loss(image, outputs["rgb_fine"])
+        rgb_loss_fine = self.rgb_loss(image, outputs["rgb"])
 
         loss_dict = {"rgb_loss_coarse": rgb_loss_coarse, "rgb_loss_fine": rgb_loss_fine}
         loss_dict = misc.scale_dict(loss_dict, self.config.loss_coefficients)
         return loss_dict
 
     def get_image_metrics_and_images(
-        self, outputs: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor]
+            self, outputs: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor]
     ) -> Tuple[Dict[str, float], Dict[str, torch.Tensor]]:
         image = batch["image"].to(outputs["rgb"].device)
         rgb_fine = outputs["rgb"]
@@ -334,11 +333,95 @@ class NeRFInternalModel(Model):
         }
         return metrics_dict, None
 
+    @torch.no_grad()
+    def get_outputs_for_camera_ray_bundle_activationinformed(self, camera_ray_bundle: RayBundle,
+                                                             layer: Optional[int] = 0,
+                                                             upsample: bool = False,
+                                                             upsample_res: List[int] = None,
+                                                             num_samples: Optional[int] = None,
+                                                             act_fct: Optional[Callable] = None) -> (
+            Dict[str, torch.Tensor], Dict):
+        # NERF AND MIPNERF
+        """Takes in camera parameters and computes the output of the model.
+
+        Args:
+            camera_ray_bundle: ray bundle to calculate outputs over
+            num_samples: how many samples for evaluating the activation
+            layer: analyze activation of this layer
+        """
+        num_rays_per_chunk = self.config.eval_num_rays_per_chunk
+        image_height, image_width = camera_ray_bundle.origins.shape[:2]
+
+        # profiling purposes
+        inner_start = time()
+
+        if upsample:
+            activation_map: torch.Tensor = torch.zeros(size=upsample_res, device=camera_ray_bundle.origins.device)
+            num_samples = upsample_res[-1]
+            activation_resolution_factor = [image_width // upsample_res[0], image_height // upsample_res[1]]
+        else:
+            activation_map: torch.Tensor = torch.zeros(size=[image_width, image_height, num_samples],
+                                                       device=camera_ray_bundle.origins.device)
+            activation_resolution_factor = [1, 1]
+
+        for i in range(0, activation_map.shape[0] * activation_map.shape[1], num_rays_per_chunk):
+            start_idx = i
+            end_idx = min(i + num_rays_per_chunk, activation_map.shape[0] * activation_map.shape[1])
+            ray_bundle = camera_ray_bundle[::activation_resolution_factor[0],
+                         ::activation_resolution_factor[1]].get_row_major_sliced_ray_bundle(start_idx, end_idx)
+            activation_map.reshape(-1, num_samples)[start_idx:end_idx] = self.forward_activation_layer(
+                ray_bundle=ray_bundle, layer=layer,
+                num_samples=num_samples)
+        t_act = time() - inner_start
+        # another pass, this time with activations as density guide
+        inner_start = time()
+
+        n_s: int = self.config.num_proposal_samples_per_ray[
+            0] if self.config.__class__.__name__ in 'NerfactoModelConfig' else self.config.num_coarse_samples
+
+        if upsample:
+            ups = torch.nn.Upsample(size=(image_height, image_width, n_s), mode='nearest')
+            activation_map = ups(activation_map.unsqueeze(0).unsqueeze(0)).squeeze()
+
+        # save index arrays (coarse and fine)
+        outputs = {}
+
+        outputs['rgb'] = torch.zeros((image_height, image_width, 3)).to(self.device)
+        outputs['depth'] = torch.zeros((image_height, image_width, 1)).to(self.device)
+        outputs['accumulation'] = torch.zeros((image_height, image_width, 1)).to(self.device)
+
+        num_rays: int = image_height * image_width
+        for i in range(0, num_rays, num_rays_per_chunk):
+            start_idx = i
+            end_idx = i + num_rays_per_chunk
+            # outputs using the rays from indexed the bundle
+            # re-use activation
+            out = self.forward_fine(
+                ray_bundle=camera_ray_bundle.get_row_major_sliced_ray_bundle(start_idx, end_idx),
+                act_coarse=activation_map.reshape(-1, n_s)[start_idx:end_idx],
+                act_fct=act_fct)
+            # overwrite based on index tuple
+            outputs['rgb'].reshape(-1, 3)[start_idx:end_idx] = out['rgb']
+            outputs['depth'].reshape(-1, 1)[start_idx:end_idx] = out['depth']
+            outputs['accumulation'].reshape(-1, 1)[start_idx:end_idx] = out['accumulation']
+        t_fine = time() - inner_start
+        t_coarse = 0.
+
+        # iterate over all index rays which fulfill the condition
+        # save the metrics
+        metrics = {
+            't_act': t_act,
+            't_coarse': t_coarse,
+            't_fine': t_fine,
+        }
+        outputs["activation_coarse"] = activation_map.mean(-1)
+        return outputs, metrics
+
     def get_activations_in_layer(self,
-                                ray_bundle: RayBundle,
-                                layer: int,
-                                num_samples: Optional[int] = None,
-                                ):
+                                 ray_bundle: RayBundle,
+                                 layer: int,
+                                 num_samples: Optional[int] = None,
+                                 ):
         """ Records activations for a layer (means over N_h)
 
         Args:

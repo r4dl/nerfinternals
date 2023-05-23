@@ -3,11 +3,12 @@ name = "nerfinternals"
 version = "0.1.1"
 
 dependencies = [
-    "nerfstudio=0.2.1" # you may want to consider pinning the version, ie "nerfstudio==0.1.19"
+    "nerfstudio" # you may want to consider pinning the version, ie "nerfstudio==0.1.19"
 ]
 
 [tool.setuptools.packages.find]
 include = ["nerfinternals*"]
 
 [project.entry-points.'nerfstudio.method_configs']
-internals_nerf_blender = 'nerfinternals.internals_config:activation_nerf_blender'
+internals_nerf = 'nerfinternals.internals_config:activation_nerf'
+internals_mipnerf = 'nerfinternals.internals_config:activation_mipnerf'
