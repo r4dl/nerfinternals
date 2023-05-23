@@ -13,6 +13,12 @@ from nerfinternals.nerf_model import NeRFInternalModelConfig, NeRFInternalModel
 from nerfinternals.mipnerf_model import MipNerfInternalModel
 from nerfinternals.pipeline import InternalsPipelineConfig, InternalVanillaPipeline
 
+
+from nerfstudio.plugins.registry_dataparser import DataParserSpecification
+from nerfinternals.llff_dataparser import LLFFDataParserConfig
+
+llff = DataParserSpecification(config=LLFFDataParserConfig)
+
 activation_nerf = MethodSpecification(
     config=TrainerConfig(
         method_name="activation-nerf",

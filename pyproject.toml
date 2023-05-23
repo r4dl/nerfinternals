@@ -12,3 +12,6 @@ include = ["nerfinternals*"]
 [project.entry-points.'nerfstudio.method_configs']
 internals_nerf = 'nerfinternals.internals_config:activation_nerf'
 internals_mipnerf = 'nerfinternals.internals_config:activation_mipnerf'
+
+[project.entry-points.'nerfstudio.dataparser_configs']
+custom-llff-dataparser = 'nerfinternals.internals_config:llff'
