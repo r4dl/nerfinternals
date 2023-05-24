@@ -69,8 +69,8 @@ As an example command, running from the nerfinternals directory, you can use
 python3 nerfinternals/eval.py --load-config outputs/chair/activation-nerf/2023-04-28_135527/config.yml --layer 0 --fct 0
 ```
 which produces the following images (left NeRF, right **Ours**).<br>
-<img alt="Coarse-to-fine" src="outputs/chair/activation-nerf/2023-04-28_135527/eval/000/coarse-to-fine.png/" width="300" />
-<img alt="Ours" src="outputs/chair/activation-nerf/2023-04-28_135527/eval/000/layer_00_ups_0_fct_std/ours.png/" width="300" /><br>
+<img alt="Coarse-to-fine" src="images/coarse-to-fine.png" width="300" />
+<img alt="Ours" src="images/ours.png" width="300" /><br>
 Statistics are given in the the stats.json file:
 ```json
   "base": {
@@ -78,7 +78,7 @@ Statistics are given in the the stats.json file:
     "metrics": {
       "psnr": 35.70448684692383,
       "ssim": 0.9865843057632446,
-      "lpips": 0.0
+      "lpips": 0.020251736044883728
     }
   },
   "layer_00_ups_0_fct_std": {
@@ -86,7 +86,7 @@ Statistics are given in the the stats.json file:
     "metrics": {
       "psnr": 34.74652099609375,
       "ssim": 0.9822013974189758,
-      "lpips": 0.0,
+      "lpips": 0.03017939068377018,
       "quantitative": {
         "t_act": 1.0785419940948486,
         "t_coarse": 0.0,

@@ -112,7 +112,7 @@ class LLFF(DataParser):
         if self.downscale_factor is not None:
             imgdir = os.path.join(self.config.data, f'images_{self.downscale_factor}')
         else:
-            imgdir = os.path.join(self.config.data, f'images')
+            imgdir = os.path.join(self.config.data, f'../images')
         image_filenames = [os.path.join(imgdir, f) for f in sorted(os.listdir(imgdir)) if
                         f.endswith('JPG') or f.endswith('jpg') or f.endswith('png')]
         # load example image
