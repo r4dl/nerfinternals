@@ -249,12 +249,12 @@ class MipNerfInternalModel(Model):
 
         fine_psnr = self.psnr(image, rgb_fine)
         fine_ssim = self.ssim(image, rgb_fine)
-        #fine_lpips = self.lpips(image, rgb_fine)
+        fine_lpips = self.lpips(image, rgb_fine)
 
         metrics_dict = {
             "psnr": float(fine_psnr.item()),
             "ssim": float(fine_ssim.item()),
-            "lpips": float(0),
+            "lpips": float(fine_lpips.item()),
         }
         return metrics_dict, None
 
