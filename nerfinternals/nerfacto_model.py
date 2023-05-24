@@ -63,6 +63,7 @@ from nerfstudio.utils import colormaps
 from time import time
 from nerfinternals.utils.mlp_density_field import MLPDensityField
 from nerfinternals.utils.act_proposal import aProposalNetworkSampler
+from nerfinternals.utils.ndc_collider import NDCCollider
 
 @dataclass
 class NerfactoInternalModelConfig(ModelConfig):
@@ -123,7 +124,8 @@ class NerfactoInternalModelConfig(ModelConfig):
     """Whether to predict normals or not."""
     disable_scene_contraction: bool = False
     """Whether to disable scene contraction or not."""
-
+    use_ndc_collider: bool = False
+    """Whether to disable scene contraction or not."""
 
 
 class NerfactoInternalModel(Model):
@@ -137,7 +139,20 @@ class NerfactoInternalModel(Model):
 
     def populate_modules(self):
         """Set the fields and modules."""
-        super().populate_modules()
+        # we don't do this here, we (might) use a custom collider
+        # super().populate_modules()
+        if self.config.enable_collider:
+            if self.config.use_ndc_collider:
+                assert 'hwf' in self.kwargs
+                hwf = self.kwargs.get('hwf')
+                self.collider = NDCCollider(
+                    h=int(hwf[0]), w=int(hwf[1]), focal=hwf[2]
+                )
+            else:
+                assert self.config.collider_params is not None
+                self.collider = NearFarCollider(
+                    near_plane=self.config.collider_params["near_plane"], far_plane=self.config.collider_params["far_plane"]
+                )
 
         if self.config.disable_scene_contraction:
             scene_contraction = None
