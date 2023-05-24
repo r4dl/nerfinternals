@@ -333,7 +333,7 @@ class InternalVanillaPipeline(Pipeline):
                 }
 
             # num_samples for either NeRF, Mip-NeRF or nerfacto
-            n_s: int = self.config.model.num_proposal_samples_per_ray[0] if self.config.model.__class__.__name__ in 'NerfactoModelConfig' else self.config.model.num_coarse_samples
+            n_s: int = self.config.model.num_proposal_samples_per_ray[0] if self.config.model.__class__.__name__ in 'NerfactoInternalModelConfig' else self.config.model.num_coarse_samples
 
             # downsample by a factor of 2
             upsample_resolution: List[int] = [b // 2 for b in batch['image'].shape[:2]] + [n_s//2]

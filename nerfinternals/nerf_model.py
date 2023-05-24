@@ -32,7 +32,7 @@ from nerfstudio.utils import colormaps, colors, misc
 
 from nerfinternals.nerf_field import aNeRFField
 from nerfstudio.model_components.scene_colliders import NearFarCollider
-from nerfinternals.ndc_collider import NDCCollider
+from nerfinternals.utils.ndc_collider import NDCCollider
 
 @dataclass
 class NeRFInternalModelConfig(ModelConfig):
@@ -57,7 +57,7 @@ class NeRFInternalModelConfig(ModelConfig):
 
 
 class NeRFInternalModel(Model):
-    """Vanilla NeRF model
+    """Vanilla NeRF Internal model
 
     Args:
         config: Basic NeRF configuration to instantiate model

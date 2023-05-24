@@ -42,7 +42,7 @@ from nerfstudio.model_components.scene_colliders import NearFarCollider
 
 from nerfinternals.nerf_model import NeRFInternalModelConfig
 from nerfinternals.nerf_field import aNeRFField
-from nerfinternals.ndc_collider import NDCCollider
+from nerfinternals.utils.ndc_collider import NDCCollider
 from time import time
 
 class MipNerfInternalModel(Model):

@@ -28,7 +28,7 @@ from nerfstudio.field_components.field_heads import (
     FieldHeadNames,
     RGBFieldHead,
 )
-from nerfinternals.act_mlp import aMLP
+from nerfinternals.utils.act_mlp import aMLP
 from nerfstudio.field_components.spatial_distortions import SpatialDistortion
 from nerfstudio.fields.base_field import Field
 
