@@ -1,5 +1,5 @@
 """
-Collection of sampling strategies
+Sampling strategy exactly for our approach.
 """
 
 from typing import Callable, List, Optional, Tuple

@@ -103,8 +103,8 @@ Statistics are given in the the stats.json file:
 ```
 ## Scripts
 We provide scripts in the `nerfinternals/scripts/` directory to train models for all scenes of a dataset. <br>
-Note that we used the configuration in `launch_train_llff_nerfacto.sh` for our results in the main paper.
-We recommend using `launch_train_llff_nerfacto_NDC.sh` for optimal results.
+Note that we used the configuration in `launch_train_llff_nerfacto.sh` for our results in the main paper. <br>
+For this, we used the **nerfstudio_data** dataparser, hence we need to use `ns-process-data` to convert the LLFF dataset to the required format.
 
 
 This project is built on [NerfStudio](https://docs.nerf.studio/en/latest/)<br>

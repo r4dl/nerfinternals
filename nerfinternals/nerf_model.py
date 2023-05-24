@@ -1,5 +1,5 @@
 """
-Implementation of vanilla nerf.
+Implementation of vanilla nerf, using activations for inference
 """
 
 from __future__ import annotations
@@ -184,7 +184,6 @@ class NeRFInternalModel(Model):
                                      act_fct=act_fct)
 
     def get_outputs(self, ray_bundle: RayBundle):
-
         if self.field_coarse is None or self.field_fine is None:
             raise ValueError("populate_fields() must be called before get_outputs")
 
@@ -412,6 +411,7 @@ class NeRFInternalModel(Model):
         Args:
             ray_bundle: Ray bundle (parameters)
             layer: Layer for which to extract the activations
+            num_samples: number of samples to use for the activations
 
         Returns:
             a dict of images
