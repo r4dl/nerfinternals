@@ -41,7 +41,7 @@ from nerfstudio.utils import colormaps, colors, misc
 from nerfstudio.model_components.scene_colliders import NearFarCollider
 
 from nerfinternals.nerf_model import NeRFInternalModelConfig
-from nerfinternals.nerf_field import aNeRFField
+from nerfinternals.utils.nerf_field import aNeRFField
 from nerfinternals.utils.ndc_collider import NDCCollider
 from time import time
 

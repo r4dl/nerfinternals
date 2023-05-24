@@ -28,9 +28,9 @@ from nerfstudio.model_components.renderers import (
     RGBRenderer,
 )
 from nerfstudio.models.base_model import Model, ModelConfig
-from nerfstudio.utils import colormaps, colors, misc
+from nerfstudio.utils import colors, misc
 
-from nerfinternals.nerf_field import aNeRFField
+from nerfinternals.utils.nerf_field import aNeRFField
 from nerfstudio.model_components.scene_colliders import NearFarCollider
 from nerfinternals.utils.ndc_collider import NDCCollider
 
