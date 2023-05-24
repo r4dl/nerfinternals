@@ -51,6 +51,7 @@ class MipNerfInternalModel(Model):
     Args:
         config: MipNerf configuration to instantiate model
     """
+    config: NeRFInternalModelConfig
 
     def __init__(
         self,
@@ -71,11 +72,11 @@ class MipNerfInternalModel(Model):
                 self.collider = NDCCollider(
                     h=int(hwf[0]), w=int(hwf[1]), focal=hwf[2]
                 )
-        else:
-            assert self.config.collider_params is not None
-            self.collider = NearFarCollider(
-                near_plane=self.config.collider_params["near_plane"], far_plane=self.config.collider_params["far_plane"]
-            )
+            else:
+                assert self.config.collider_params is not None
+                self.collider = NearFarCollider(
+                    near_plane=self.config.collider_params["near_plane"], far_plane=self.config.collider_params["far_plane"]
+                )
 
         # setting up fields
         position_encoding = NeRFEncoding(
@@ -141,9 +142,7 @@ class MipNerfInternalModel(Model):
 
         Args:
             ray_bundle: containing all the information needed to render that ray latents included
-            weights_coarse: weights for deriving a pdf-density
             act_coarse: activation to derive weights from
-            pdf_samples: optional samples to use instead of uniform samples
             act_fct: function to apply to the activations before normalizing
         """
 
@@ -155,8 +154,8 @@ class MipNerfInternalModel(Model):
                                      act_fct=act_fct)
 
     def get_outputs_fine(self, ray_bundle: RayBundle,
-                         act_coarse: Optional[torch.Tensor] = None,
-                         act_fct: Optional[Callable] = None):
+                         act_coarse: torch.Tensor,
+                         act_fct: Callable):
         """ derives a density from the activations and uses this to derive a pdf-density
 
         Args:
@@ -172,22 +171,19 @@ class MipNerfInternalModel(Model):
 
         num_samples: int = self.sampler_uniform.num_samples if act_coarse is None else act_coarse.shape[-1]
         ray_samples_uniform = self.sampler_uniform(ray_bundle, num_samples=num_samples)
-        # If the activation is not None, use it
-        if act_fct is not None:
-            weights_ray_act = act_fct(act_coarse)
-        else:
-            weights_ray_act = torch.relu((act_coarse.mean(-1, keepdim=True) - (act_coarse.std(-1, keepdim=True)/2))
-                                         - act_coarse)**2
+
+        weights_ray_act = act_fct(act_coarse)
+
         # derive weights from the activations
         weights_coarse_act = ray_samples_uniform.get_weights(weights_ray_act.unsqueeze(-1))
         samples: RaySamples = ray_samples_uniform
 
         # normalize weights to 1
         weights_coarse_act /= weights_coarse_act.sum(-2, keepdim=True)
+
         # obtain a pdf-distributed samples from the activations
         ray_samples_pdf = self.sampler_pdf(ray_bundle, samples, weights_coarse_act,
                                            num_samples=self.sampler_pdf.num_samples)
-        # num_samples=self.sampler_pdf.num_samples + self.sampler_uniform.num_samples // 2)
 
         # Second pass:
         field_outputs_fine = self.field.forward(ray_samples_pdf)
@@ -207,7 +203,6 @@ class MipNerfInternalModel(Model):
         return outputs
 
     def get_outputs(self, ray_bundle: RayBundle):
-
         if self.field is None:
             raise ValueError("populate_fields() must be called before get_outputs")
 
@@ -306,13 +301,15 @@ class MipNerfInternalModel(Model):
                                                              num_samples: Optional[int] = None,
                                                              act_fct: Optional[Callable] = None) -> (
             Dict[str, torch.Tensor], Dict):
-        # NERF AND MIPNERF
-        """Takes in camera parameters and computes the output of the model.
+        """Takes in camera parameters and computes the output of the model, with activations.
 
         Args:
             camera_ray_bundle: ray bundle to calculate outputs over
-            num_samples: how many samples for evaluating the activation
             layer: analyze activation of this layer
+            upsample: whether to use upsampling or not
+            upsample_res: resolution of the activation map (if upsampling is enabled)
+            num_samples: how many samples for evaluating the activation
+            act_fct: what function to use for transformation
         """
         num_rays_per_chunk = self.config.eval_num_rays_per_chunk
         image_height, image_width = camera_ray_bundle.origins.shape[:2]
@@ -341,8 +338,7 @@ class MipNerfInternalModel(Model):
         # another pass, this time with activations as density guide
         inner_start = time()
 
-        n_s: int = self.config.num_proposal_samples_per_ray[
-            0] if self.config.__class__.__name__ in 'NerfactoModelConfig' else self.config.num_coarse_samples
+        n_s: int = self.config.num_coarse_samples
 
         if upsample:
             ups = torch.nn.Upsample(size=(image_height, image_width, n_s), mode='nearest')
