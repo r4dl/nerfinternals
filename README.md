@@ -47,8 +47,9 @@ Note: You should re-activate your environment.
 ```
 You should see the new methods `activation_{nerf, mipnerf, nerfacto}`
 ## Running pre-trained Methods
-As models are costly to train, we provide pre-trained models in ... <br>
-Create a directory `nerfinternals/outputs` and paste the models there.
+As models are costly to train, especially for NeRF and Mip-NeRF, we provide pre-trained models in [outputs.zip](https://drive.google.com/file/d/1whGVEQ-LvpsgYZGxQvOA5tYcJ8N_sc-9/view?usp=sharing), hosted via Google Drive. <br>
+Note that these models can be used with `{vanilla-nerf, mipnerf}` by re-writing the corresponding `config.yml` file. <br>
+Create a directory `nerfinternals/outputs` and paste the models there. <br>
 To evaluate, use our `eval.py` script located in `nerfinternals/nerfinternals/eval.py`. <br>
 Our models expect data in the directory `nerfstudio/data/{nerf_llff_data, blender}`. <br>
 Example data can be downloaded with `ns-download-data`. We use the LLFF dataset provided by [NeRF-Factory](https://github.com/kakaobrain/nerf-factory).<br>
