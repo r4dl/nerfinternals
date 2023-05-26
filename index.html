@@ -1,23 +1,23 @@
-<script src="http://www.google.com/jsapi" type="text/javascript"></script> 
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
 <script type="text/javascript">google.load("jquery", "1.3.2");</script>
 
 <style type="text/css">
 	body {
-		font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+		font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
 		font-weight:300;
 		font-size:18px;
 		margin-left: auto;
 		margin-right: auto;
 		width: 1100px;
 	}
-	
+
 	h1 {
 		font-size:32px;
 		font-weight:300;
 	}
-	
+
 	.disclaimerbox {
-		background-color: #eee;		
+		background-color: #eee;
 		border: 1px solid #eeeeee;
 		border-radius: 10px ;
 		-moz-border-radius: 10px ;
@@ -32,7 +32,7 @@
 		-moz-border-radius: 10px ;
 		-webkit-border-radius: 10px ;
 	}
-	
+
 	img.header-img {
 		height: 140px;
 		border: 1px solid black;
@@ -40,14 +40,14 @@
 		-moz-border-radius: 10px ;
 		-webkit-border-radius: 10px ;
 	}
-	
+
 	img.rounded {
 		border: 1px solid #eeeeee;
 		border-radius: 10px ;
 		-moz-border-radius: 10px ;
 		-webkit-border-radius: 10px ;
 	}
-	
+
 	a:link,a:visited
 	{
 		color: #1367a7;
@@ -56,33 +56,33 @@
 	a:hover {
 		color: #208799;
 	}
-	
+
 	td.dl-link {
 		height: 160px;
 		text-align: center;
 		font-size: 22px;
 	}
-	
+
 	.layered-paper-big { /* modified from: http://css-tricks.com/snippets/css/layered-paper/ */
 		box-shadow:
-		0px 0px 1px 1px rgba(0,0,0,0.35), /* The top layer shadow */
-		5px 5px 0 0px #fff, /* The second layer */
-		5px 5px 1px 1px rgba(0,0,0,0.35), /* The second layer shadow */
-		10px 10px 0 0px #fff, /* The third layer */
-		10px 10px 1px 1px rgba(0,0,0,0.35), /* The third layer shadow */
-		15px 15px 0 0px #fff, /* The fourth layer */
-		15px 15px 1px 1px rgba(0,0,0,0.35), /* The fourth layer shadow */
-		20px 20px 0 0px #fff, /* The fifth layer */
-		20px 20px 1px 1px rgba(0,0,0,0.35), /* The fifth layer shadow */
-		25px 25px 0 0px #fff, /* The fifth layer */
-		25px 25px 1px 1px rgba(0,0,0,0.35); /* The fifth layer shadow */
+				0px 0px 1px 1px rgba(0,0,0,0.35), /* The top layer shadow */
+				5px 5px 0 0px #fff, /* The second layer */
+				5px 5px 1px 1px rgba(0,0,0,0.35), /* The second layer shadow */
+				10px 10px 0 0px #fff, /* The third layer */
+				10px 10px 1px 1px rgba(0,0,0,0.35), /* The third layer shadow */
+				15px 15px 0 0px #fff, /* The fourth layer */
+				15px 15px 1px 1px rgba(0,0,0,0.35), /* The fourth layer shadow */
+				20px 20px 0 0px #fff, /* The fifth layer */
+				20px 20px 1px 1px rgba(0,0,0,0.35), /* The fifth layer shadow */
+				25px 25px 0 0px #fff, /* The fifth layer */
+				25px 25px 1px 1px rgba(0,0,0,0.35); /* The fifth layer shadow */
 		margin-left: 10px;
 		margin-right: 45px;
 	}
 
 	.paper-big { /* modified from: http://css-tricks.com/snippets/css/layered-paper/ */
 		box-shadow:
-		0px 0px 1px 1px rgba(0,0,0,0.35); /* The top layer shadow */
+				0px 0px 1px 1px rgba(0,0,0,0.35); /* The top layer shadow */
 
 		margin-left: 10px;
 		margin-right: 45px;
@@ -91,23 +91,23 @@
 
 	.layered-paper { /* modified from: http://css-tricks.com/snippets/css/layered-paper/ */
 		box-shadow:
-		0px 0px 1px 1px rgba(0,0,0,0.35), /* The top layer shadow */
-		5px 5px 0 0px #fff, /* The second layer */
-		5px 5px 1px 1px rgba(0,0,0,0.35), /* The second layer shadow */
-		10px 10px 0 0px #fff, /* The third layer */
-		10px 10px 1px 1px rgba(0,0,0,0.35); /* The third layer shadow */
+				0px 0px 1px 1px rgba(0,0,0,0.35), /* The top layer shadow */
+				5px 5px 0 0px #fff, /* The second layer */
+				5px 5px 1px 1px rgba(0,0,0,0.35), /* The second layer shadow */
+				10px 10px 0 0px #fff, /* The third layer */
+				10px 10px 1px 1px rgba(0,0,0,0.35); /* The third layer shadow */
 		margin-top: 5px;
 		margin-left: 10px;
 		margin-right: 30px;
 		margin-bottom: 5px;
 	}
-	
+
 	.vert-cent {
 		position: relative;
 		top: 50%;
 		transform: translateY(-50%);
 	}
-	
+
 	hr
 	{
 		border: 0;
@@ -125,7 +125,7 @@
 
 	<!-- Get from Google Analytics -->
 	<!-- Global site tag (gtag.js) - Google Analytics -->
-	<script async src=""></script> 
+	<script async src=""></script>
 	<script>
 		window.dataLayer = window.dataLayer || [];
 		function gtag(){dataLayer.push(arguments);}
@@ -136,209 +136,253 @@
 </head>
 
 <body>
-	<br>
-	<center>
-		<span style="font-size:36px">Analyzing the Internals of Neural Radiance Fields</span><br>
-
-		<table align=center width=600px>
-			<table align=center width=600px>
-				<tr>
-					<td align=center width=100px>
-						<center>
-							<span style="font-size:24px"><a href="https://scholar.google.com/citations?user=G_0ZsTIAAAAJ&hl=de">Lukas Radl</a></span><br>
-							<span style="font-size:12px">Graz University of Technology</span>
-						</center>
-					</td>
-					<td align=center width=100px>
-						<center>
-							<span style="font-size:24px"><a href="https://online.tugraz.at/tug_online/visitenkarte.show_vcard?pPersonenGruppe=3&pPersonenId=D715516087483BD3">Andreas Kurz</a></span><br>
-							<span style="font-size:12px">Graz University of Technology</span>
-						</center>
-					</td>
-					<td align=center width=100px>
-						<center>
-							<span style="font-size:24px"><a href="https://www.markussteinberger.net/">Markus Steinberger</a></span><br>
-							<span style="font-size:12px">Graz University of Technology</span>
-						</center>
-					</td>
-				</tr>
-			</table>
-			<hr>
-			<table align=center width=250px>
-				<tr>
-					<td align=center width=120px>
-						<center>
-							<span style="font-size:24px;"><a href=''>[arXiv]</a></span>
-						</center>
-					</td>
-					<td align=center width=120px>
-						<center>
-							<span style="font-size:24px"><a href='https://github.com/r4dl/nerfinternals'>[GitHub]</a></span><br>
-						</center>
-					</td>
-				</tr>
-			</table>
-		</table>
-	</center>
+<br>
+<center>
+	<span style="font-size:36px">Analyzing the Internals of Neural Radiance Fields</span><br>
+	<span style="font-size:12px">We propose a novel approach for approximating a weight distribution from the activations of trained NeRFs.</span><br>
 	<hr>
+	<table align=center width=600px>
+		<table align=center width=600px>
 
-	<center>
-		<table align=center width=1000px>
 			<tr>
-				<td width=500px>
+				<td align=center width=100px>
 					<center>
-						<img class="round" style="width:800px" src="./resources/teaser.png"/>
+						<span style="font-size:24px"><a href="https://scholar.google.com/citations?user=G_0ZsTIAAAAJ&hl=de">Lukas Radl</a></span><br>
+						<span style="font-size:12px">Graz University of Technology</span>
+					</center>
+				</td>
+				<td align=center width=100px>
+					<center>
+						<span style="font-size:24px"><a href="https://online.tugraz.at/tug_online/visitenkarte.show_vcard?pPersonenGruppe=3&pPersonenId=D715516087483BD3">Andreas Kurz</a></span><br>
+						<span style="font-size:12px">Graz University of Technology</span>
+					</center>
+				</td>
+				<td align=center width=100px>
+					<center>
+						<span style="font-size:24px"><a href="https://www.markussteinberger.net/">Markus Steinberger</a></span><br>
+						<span style="font-size:12px">Graz University of Technology</span>
 					</center>
 				</td>
 			</tr>
 		</table>
-	</center>
+		<hr>
+		<table align=center width=250px>
+			<tr>
+				<td align=center width=120px>
+					<center>
+						<span style="font-size:24px;"><a href=''>[arXiv]</a></span>
+					</center>
+				</td>
+				<td align=center width=120px>
+					<center>
+						<span style="font-size:24px"><a href='https://github.com/r4dl/nerfinternals'>[GitHub]</a></span><br>
+					</center>
+				</td>
+			</tr>
+		</table>
+	</table>
+</center>
+<hr>
 
-	<hr>
+<center>
+	<table align=center width=1000px>
+		<tr>
+			<td width=500px>
+				<center>
+					<img class="round" style="width:800px" src="./resources/teaser.png"/>
+				</center>
+			</td>
+		</tr>
+	</table>
+</center>
 
-	<table align=center width=850px>
-		<center><h1>Abstract</h1></center>
+<hr>
+
+<table align=center width=850px>
+	<center><h1>Abstract</h1></center>
+	<tr>
+		<td>
+			Modern Neural Radiance Fields (NeRFs) learn a mapping from position to volumetric density via proposal network samplers.
+			In contrast to the coarse-to-fine sampling approach with two NeRFs, this offers significant potential for speedups using lower network capacity as the task of mapping spatial coordinates to volumetric density involves no view-dependent effects and is thus much easier to learn.
+			Given that most of the network capacity is utilized to estimate radiance, NeRFs could store valuable density information in their parameters or their deep features.
+			To this end, we take one step back and analyze large, trained ReLU-MLPs used in coarse-to-fine sampling.
+			We find that trained NeRFs, Mip-NeRFs and proposal network samplers map samples with high density to local minima along a ray in activation feature space.
+			We show how these large MLPs can be accelerated by transforming the intermediate activations to a weight estimate, without any modifications to the parameters post-optimization.
+			With our approach, we can reduce the computational requirements of trained NeRFs by up to 50% with only a slight hit in rendering quality and no changes to the training protocol or architecture.
+			We evaluate our approach on a variety of architectures and datasets, showing that our proposition holds in various settings.
+		</td>
+	</tr>
+</table>
+<br>
+<hr>
+<center><h1>Obtaining density estimates from activations.</h1></center>
+
+<table align=center width=800px>
+	<center>
 		<tr>
 			<td>
-				Modern Neural Radiance Fields (NeRFs) learn a mapping from position to volumetric density via proposal network samplers.
-  In contrast to the coarse-to-fine sampling approach with two NeRFs, this offers significant potential for speedups using lower network capacity as the task of mapping spatial coordinates to volumetric density involves no view-dependent effects and is thus much easier to learn.
-	Given that most of the network capacity is utilized to estimate radiance, NeRFs could store valuable density information in their parameters or their deep features.
-  To this end, we take one step back and analyze large, trained ReLU-MLPs used in coarse-to-fine sampling.
-  We find that trained NeRFs, Mip-NeRFs and proposal network samplers map samples with high density to local minima along a ray in activation feature space.
-  We show how these large MLPs can be accelerated by transforming the intermediate activations to a weight estimate, without any modifications to the parameters post-optimization.
-  With our approach, we can reduce the computational requirements of trained NeRFs by up to 50% with only a slight hit in rendering quality and no changes to the training protocol or architecture.
-  We evaluate our approach on a variety of architectures and datasets, showing that our proposition holds in various settings.
 			</td>
 		</tr>
-	</table>
-	<br>
-	<hr>
-	<center><h1>Obtaining density estimates from activations.</h1></center>
-
-	<table align=center width=800px>
-		<center>
-			<tr>
-				<td>
-				</td>
-			</tr>
-		</center>
-	</table>
-	<table align=center width=800px>
+	</center>
+</table>
+<table align=center width=800px>
+	<tr>
+		<td align=center width=800px>
+			<center>
+				<td><img class="round" style="width:800px" src="./resources/supp_fig-2.png"/></td>
+			</center>
+		</td>
+	</tr>
+</table>
+<br>
+<table align=center width=800px>
+	<center>
 		<tr>
-			<td align=center width=800px>
-				<center>
-					<td><img class="round" style="width:800px" src="./resources/supp_fig-2.png"/></td>
-				</center>
+			<td>
+				We analyze the histograms of trained NeRFs, Mip-NeRFs and proposal networks samples (as in Mip-NeRF 360)
+				and find that their intermediate activations are useful in finding a density estimate.
 			</td>
 		</tr>
-	</table>
-		<br>
-	<table align=center width=800px>
-		<center>
-			<tr>
-				<td>
-					We analyze the histograms of trained NeRFs, Mip-NeRFs and proposal networks samples (as in Mip-NeRF 360)
-					and find that their intermediate activations are useful in finding a density estimate.
-				</td>
-			</tr>
-						<tr>
-				<td>
-					We evaluate our approach on real-world and synthetic data and obtain similar visual quality compared with NeRF, Mip-NeRf and a modified nerfacto model,
-					with lower inference cost.
-				</td>
-			</tr>
-			<tr>
-								<td>
-					Our project is built upon <a href="https://github.com/nerfstudio-project/nerfstudio/">Nerfstudio</a> and our modules can be installed as a Python Package.
-				</td>
-			</tr>
-		</center>
-
-	</table>
-	<br>
-		<table align=center width=800px>
 		<tr>
-			<td align=center width=800px>
-				<center>
-					<td><img class="round" style="width:800px" src="./resources/image_comp_4.png"/></td>
-				</center>
+			<td>
+				Using our simple and efficient method, we can extract a density estimate from the activations of early
+				layers in coarse-to-fine sampling, which leads to a reduction in run-time with comparable visual quality.
 			</td>
 		</tr>
-	</table>
+		<tr>
+			<td>
+				Our approach requires no pre-training or fine-tuning. To our knowledge, we are the first to use activations
+				from coordinate-based MLPs during inference.
+			</td>
+		</tr>
+		<tr>
+			<td>
+				We evaluate our approach on real-world and synthetic data and obtain similar visual quality compared with NeRF, Mip-NeRf and a modified nerfacto model,
+				with lower inference cost.
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Our project is built upon <a href="https://github.com/nerfstudio-project/nerfstudio/">Nerfstudio</a> and our modules can be installed as a Python Package.
+			</td>
+		</tr>
+	</center>
+
+</table>
+<br>
+<table align=center width=800px>
+	<tr>
+		<td align=center width=800px>
+			<center>
+				<td><img class="round" style="width:800px" src="./resources/image_comp_4.png"/></td>
+			</center>
+		</td>
+	</tr>
+</table>
 
 <table align=center width=800px>
 	<table align=center width=800px>
 
-	<br>
-	<hr>
-	<table align=center width=450px>
-		<center><h1>Paper and Supplementary Material</h1></center>
-		<tr>
-			<td><a href=""><img class="layered-paper-big" style="height:175px" src="./resources/paper_screenshots/Screenshot%20from%202023-05-26%2013-41-50.png"/></a></td>
-			<td><span style="font-size:14pt">L. Radl, A. Kurz, M. Steinberger.<br>
+		<br>
+		<hr>
+		<table align=center width=450px>
+			<center><h1>Paper and Supplementary Material</h1></center>
+			<tr>
+				<td><a href=""><img class="layered-paper-big" style="height:175px" src="./resources/paper_screenshots/Screenshot%20from%202023-05-26%2013-41-50.png"/></a></td>
+				<td><span style="font-size:14pt">L. Radl, A. Kurz, M. Steinberger.<br>
 				<b>Analyzing the Internals of Neural Radiance Fields.</b><br>
 				In arXiv, 2023.<br>
 				(hosted on <a href="">ArXiv</a>)<br>
-				<!-- (<a href="./resources/camera-ready.pdf">camera ready</a>)<br> -->
+					<!-- (<a href="./resources/camera-ready.pdf">camera ready</a>)<br> -->
 				<span style="font-size:4pt"><a href=""><br></a>
 				</span>
-			</td>
-		</tr>
-	</table>
-	<br>
-			<br>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<br>
 
-	<hr>
-				<center><h3>Citation</h3></center>
-<code style="">
-		<table align=center width=750px style="color: white; background-color: darkslategray; padding: 2px;">
-		<tr>
-			<td>
-				@article(RadlNerfInternals2023,
-			</td>
-		</tr>
+		<hr>
+		<center><h1>Citation</h1></center>
+		<code style="">
+			<table align=center width=750px style="color: white; background-color: darkslategray; padding: 2px;">
+				<tr>
+					<td>
+						@article(RadlNerfInternals2023,
+					</td>
+
+				</tr>
+			</table>
+			<table align=center width=750px style="color: white; background-color: darkslategray; padding: 2px;">
+				<tr>
+				<tr>
+					<td width="2%">
+					</td>
+					<td width="16%">
+						title &nbsp;&nbsp;
+					</td>
+					<td>
+						= {{Analyzing the Internals of Neural Radiance Fields}},
+					</td>
+				</tr>
+				<tr>
+					<td width="2%">
+					</td>
+					<td width="16%">
+						author
+					</td>
+					<td>
+						= {Radl, Lukas and Kurz, Andreas and Steinberger, Markus},
+					</td>
+				</tr>
+				<tr>
+				<tr>
+					<td width="2%">
+					</td>
+					<td width="16%">
+						journal
+					</td>
+					<td>
+						= {arXiv preprint arXiv:},
+					</td>
+				</tr>
+				<tr>
+				<tr>
+					<td width="2%">
+					</td>
+					<td width="16%">
+						year
+					</td>
+					<td>
+						= {2023},
+					</td>
+				</tr>
+				<table align=center width=750px style="color: white; background-color: darkslategray; padding: 2px;">
 					<tr>
-			<td>
-				&ensp; title &nbsp;&nbsp; = {{Analyzing the Internals of Neural Radiance Fields}},
-			</td>
-		</tr>
-								<tr>
-			<td>
-  &ensp; author &nbsp; = {Radl, Lukas and Kurz, Andreas and Steinberger, Markus},
-			</td>
-		</tr>
-								<tr>
-			<td>
-  &ensp; journal = {arXiv preprint arXiv:},
-			</td>
-		</tr>
-								<tr>
-			<td>
-  &ensp; year &nbsp;&nbsp;&nbsp; = {2023},
-			</td>
-		</tr>
-								<tr>
-			<td>
-				}
-			</td>
-		</tr>
-	</table>
-</code>
-	<hr>
-	<br>
+						<td>
+							}
+						</td>
 
-	<table align=center width=900px>
-		<tr>
-			<td width=400px>
-				<left>
-					<center><h1>Acknowledgements</h1></center>
-					This template was originally made by <a href="http://web.mit.edu/phillipi/">Phillip Isola</a> and <a href="http://richzhang.github.io/">Richard Zhang</a> for a <a href="http://richzhang.github.io/colorization/">colorful</a> ECCV project; the code can be found <a href="https://github.com/richzhang/webpage-template">here</a>.
-				</left>
-			</td>
-		</tr>
-	</table>
+					</tr>
+				</table>
+			</table>
+		</code>
+		<hr>
 
-<br>
+		<table align=center width=900px>
+			<tr>
+				<td width=400px>
+					<left>
+						<center><h1>Acknowledgements</h1></center>
+						This template was originally made by <a href="http://web.mit.edu/phillipi/">Phillip Isola</a> and <a href="http://richzhang.github.io/">Richard Zhang</a> for a <a href="http://richzhang.github.io/colorization/">colorful</a> ECCV project; the code can be found <a href="https://github.com/richzhang/webpage-template">here</a>.
+					</left>
+				</td>
+			</tr>
+		</table>
+
+		<br>
 </body>
 </html>
+
+
 
