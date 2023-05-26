@@ -28,7 +28,7 @@ class ActivationDerivedDensity:
     fct: Tuple[int, ...] = (0, 1, 2)
     # whether to upsample or not
     upsample: bool = False
-    # whether to upsample or not
+    # whether to run coarse-to-fine pipeline or not
     run_normal: bool = True
     # directory to save outputs in
     output_dir: str = "eval"

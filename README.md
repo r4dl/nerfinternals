@@ -71,7 +71,8 @@ Load a checkpoint, use the activations for estimating the density.
 │ --upsample, --no-upsample                                                  │
 │                         whether to upsample or not (default: False)        │
 │ --run-normal, --no-run-normal                                              │
-│                         whether to upsample or not (default: True)         │
+│                         whether to run coarse-to-fine pipeline or not      │
+│                         (default: True)                                    │
 │ --output-dir STR        directory to save outputs in (default: eval)       │
 ╰────────────────────────────────────────────────────────────────────────────╯
 ```
