@@ -2,7 +2,8 @@
 ### [Lukas Radl](https://scholar.google.com/citations?user=G_0ZsTIAAAAJ&hl=de)<sup>1</sup>, [Andreas Kurz](https://online.tugraz.at/tug_online/visitenkarte.show_vcard?pPersonenGruppe=3&pPersonenId=D715516087483BD3)<sup>1</sup>,[Markus Steinberger](https://www.markussteinberger.net/)<sup>1</sup><br>
 #### <sup>1</sup> Graz University of Technology <br>
 #### [Project Page]() | [Preprint]()
-<img alt="Our Approach" src="images/v6_analysis.png" /><br>
+<img alt="Our Approach" src="images/v6_analysis.png" />
+
 # Installation
 This repository follows the integration guidelines described [here](https://docs.nerf.studio/en/latest/developer_guides/new_methods.html) for custom methods within Nerfstudio. 
 ### 0. Install Nerfstudio dependencies
