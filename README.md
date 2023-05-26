@@ -1,6 +1,8 @@
 # Analyzing the Internals of Neural Radiance Fields
-Anonymous Authors.
-
+### [Lukas Radl](https://scholar.google.com/citations?user=G_0ZsTIAAAAJ&hl=de)<sup>1</sup>, [Andreas Kurz](https://online.tugraz.at/tug_online/visitenkarte.show_vcard?pPersonenGruppe=3&pPersonenId=D715516087483BD3)<sup>1</sup>,[Markus Steinberger](https://www.markussteinberger.net/)<sup>1</sup><br>
+#### <sup>1</sup> Graz University of Technology <br>
+#### [Project Page]() | [Preprint]()
+<img alt="Our Approach" src="images/v6_analysis.png" /><br>
 # Installation
 This repository follows the integration guidelines described [here](https://docs.nerf.studio/en/latest/developer_guides/new_methods.html) for custom methods within Nerfstudio. 
 ### 0. Install Nerfstudio dependencies
@@ -44,7 +46,8 @@ Note: You should re-activate your environment.
 ```
 You should see the new methods `activation_{nerf, mipnerf, nerfacto}`
 ## Running pre-trained Methods
-We provide pre-trained models in `nerfinternals/outputs`.<br>
+As models are costly to train, we provide pre-trained models in ... <br>
+Create a directory `nerfinternals/outputs` and paste the models there.
 To evaluate, use our `eval.py` script located in `nerfinternals/nerfinternals/eval.py`. <br>
 Our models expect data in the directory `nerfstudio/data/{nerf_llff_data, blender}`. <br>
 Example data can be downloaded with `ns-download-data`. We use the LLFF dataset provided by [NeRF-Factory](https://github.com/kakaobrain/nerf-factory).<br>
@@ -77,7 +80,7 @@ python3 nerfinternals/eval.py --load-config outputs/chair/activation-nerf/2023-0
 which produces the following images (left NeRF, right **Ours**).<br>
 <img alt="Coarse-to-fine" src="images/coarse-to-fine.png" width="150" />
 <img alt="Ours" src="images/ours.png" width="150" /><br>
-Statistics are given in the the stats.json file:
+Statistics are given in the the stats.json file (run on a NVIDIA 2070 Super):
 ```json
   "base": {
     "t": 43.97965955734253,
@@ -111,3 +114,13 @@ This project is built on [NerfStudio](https://docs.nerf.studio/en/latest/)<br>
 [<img alt="NerfStudio logo" src="images/nerfstudio-logo.png" width="300" />](https://docs.nerf.studio/en/latest/)<br>
 Our code was tested with [nerfstudio=v0.3.1](https://github.com/nerfstudio-project/nerfstudio/releases/tag/v0.3.1) 
 and Cuda 11.7.
+
+If you use our work or build on top of it, use the following citation:
+```bibtex
+@article(RadlNerfInternals2023,
+  title     = {{Analyzing the Internals of Neural Radiance Fields}},
+  author    = {Radl, Lukas and Kurz, Andreas and Steinberger, Markus},
+  journal   = {arXiv preprint arXiv:},
+  year      = {2023},
+}
+```
