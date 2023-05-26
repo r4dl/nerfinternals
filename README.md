@@ -113,7 +113,7 @@ Note that we used the configuration in `launch_train_llff_nerfacto.sh` for our r
 For this, we used the **nerfstudio_data** dataparser, hence we need to use `ns-process-data` to convert the LLFF dataset to the required format.
 
 
-This project is built on [NerfStudio](https://docs.nerf.studio/en/latest/)<br>
+This project is built on [Nerfstudio](https://docs.nerf.studio/en/latest/)<br>
 [<img alt="NerfStudio logo" src="images/nerfstudio-logo.png" width="300" />](https://docs.nerf.studio/en/latest/)<br>
 Our code was tested with [nerfstudio=v0.3.1](https://github.com/nerfstudio-project/nerfstudio/releases/tag/v0.3.1) 
 and Cuda 11.7.
