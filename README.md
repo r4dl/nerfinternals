@@ -1,8 +1,11 @@
 # Analyzing the Internals of Neural Radiance Fields
-### [Lukas Radl](https://scholar.google.com/citations?user=G_0ZsTIAAAAJ&hl=de)<sup>1</sup>, [Andreas Kurz](https://online.tugraz.at/tug_online/visitenkarte.show_vcard?pPersonenGruppe=3&pPersonenId=D715516087483BD3)<sup>1</sup>,[Markus Steinberger](https://www.markussteinberger.net/)<sup>1</sup><br>
-#### <sup>1</sup> Graz University of Technology <br>
+### [Lukas Radl](https://scholar.google.com/citations?user=G_0ZsTIAAAAJ&hl=de)<sup>&ddagger;</sup>, [Andreas Kurz](https://online.tugraz.at/tug_online/visitenkarte.show_vcard?pPersonenGruppe=3&pPersonenId=D715516087483BD3)<sup>&ddagger;</sup>,[Markus Steinberger](https://www.markussteinberger.net/)<sup>&ddagger;</sup><br>
+#### <sup>&ddagger;</sup> Graz University of Technology <br>
 #### [Project Page]() | [Preprint]()
 <img alt="Our Approach" src="images/v6_analysis.png" />
+We propose a novel method to extract densities from intermediate activations. Using our approach, we can skip the forward 
+pass of the coarse NeRF, in turn gaining efficiency. We find that this approach also works when using Mip-NeRF and even holds
+for proposal network samples, as in Mip-NeRF 360.
 
 # Installation
 This repository follows the integration guidelines described [here](https://docs.nerf.studio/en/latest/developer_guides/new_methods.html) for custom methods within Nerfstudio. 
@@ -46,11 +49,21 @@ Note: You should re-activate your environment.
 ╰──────────────────────────────────────────────────────────────────────╯ 
 ```
 You should see the new methods `activation_{nerf, mipnerf, nerfacto}`
-## Running pre-trained Methods
-As models are costly to train, especially for NeRF and Mip-NeRF, we provide pre-trained models in [outputs.zip](https://drive.google.com/file/d/1whGVEQ-LvpsgYZGxQvOA5tYcJ8N_sc-9/view?usp=sharing), hosted via Google Drive. <br>
-Note that these models can be used with `{vanilla-nerf, mipnerf}` by re-writing the corresponding `config.yml` file. <br>
-Create a directory `nerfinternals/outputs` and paste the models there. <br>
-To evaluate, use our `eval.py` script located in `nerfinternals/nerfinternals/eval.py`. <br>
+
+## Training
+To train a model (just as done in the paper), run:
+```train
+ns-train activation_{nerf, mipnerf, nerfacto} --data <path_to_data> <other cl-args> <dataparser>
+```
+### Scripts
+As we need to set a lot of individual command line arguments, we provide scripts in the `nerfinternals/scripts/` directory to train models for all scenes of a dataset. <br>
+Note that we used the configuration in `launch_train_llff_nerfacto.sh` for our results in the main paper. <br>
+For this, we used the `nerfstudio_data` dataparser, hence we need to use `ns-process-data` to convert the LLFF dataset to the required format.
+Run `ns-process-data -h` for further information about this command. We use the default arguments for `images`, and we use 
+the images with a downscale factor of 4.
+
+## Evaluation
+To evaluate with **our approach**, use our `eval.py` script located in `nerfinternals/nerfinternals/eval.py`. <br>
 Our models expect data in the directory `nerfstudio/data/{nerf_llff_data, blender}`. <br>
 Example data can be downloaded with `ns-download-data`. We use the LLFF dataset provided by [NeRF-Factory](https://github.com/kakaobrain/nerf-factory).<br>
 Run `python nerfinternals/nerfinternals/eval.py -h` to see a list of available options:
@@ -76,7 +89,7 @@ Load a checkpoint, use the activations for estimating the density.
 │ --output-dir STR        directory to save outputs in (default: eval)       │
 ╰────────────────────────────────────────────────────────────────────────────╯
 ```
-As an example command, running from the nerfinternals directory, you can use
+As an example command, running from the `nerfstudio/nerfinternals` directory, you can use
 ```
 python3 nerfinternals/eval.py --load-config outputs/chair/activation-nerf/2023-04-28_135527/config.yml --layer 0 --fct 0 --no-run-normal
 ```
@@ -107,12 +120,39 @@ Statistics are given in the the stats.json file (run on a NVIDIA 2070 Super):
     }
   }
 ```
-## Scripts
-We provide scripts in the `nerfinternals/scripts/` directory to train models for all scenes of a dataset. <br>
-Note that we used the configuration in `launch_train_llff_nerfacto.sh` for our results in the main paper. <br>
-For this, we used the **nerfstudio_data** dataparser, hence we need to use `ns-process-data` to convert the LLFF dataset to the required format.
 
+## Pre-trained Models
+As models are costly to train, especially for NeRF and Mip-NeRF, we provide pre-trained models in [outputs.zip](https://drive.google.com/file/d/1whGVEQ-LvpsgYZGxQvOA5tYcJ8N_sc-9/view?usp=sharing), hosted via Google Drive. <br>
+Note that these models can be used with `{vanilla-nerf, mipnerf}` by re-writing the corresponding `config.yml` file. <br>
+Create a directory `nerfinternals/outputs` and paste the models there. <br>
 
+## Results
+Our approach achieves the following performance on:
+<table>
+<tr><th>
+<a href="https://paperswithcode.com/sota/novel-view-synthesis-on-nerf">Blender Dataset</a></th>
+<th>
+<a href="https://paperswithcode.com/sota/novel-view-synthesis-on-llff">LLFF Dataset</a></th>
+</tr>
+<tr><td>
+
+| Model name                   | PSNR     |
+|------------------------------|----------|
+| NeRF (best)                  | 29.44 dB |
+| Mip-NeRF (best)              | 29.35 dB |
+| nerfacto (best)              | 26.56 dB |
+
+</td><td>
+
+| Model name                   | PSNR     |
+|------------------------------|----------|
+| NeRF (best)                  | 25.40 dB |
+| Mip-NeRF (best)              | 25.49 dB |
+| nerfacto (best)              | 24.85 dB |
+
+</td></tr> </table>
+
+# Acknowledgements
 This project is built on [Nerfstudio](https://docs.nerf.studio/en/latest/)<br>
 [<img alt="NerfStudio logo" src="images/nerfstudio-logo.png" width="300" />](https://docs.nerf.studio/en/latest/)<br>
 Our code was tested with [nerfstudio=v0.3.1](https://github.com/nerfstudio-project/nerfstudio/releases/tag/v0.3.1) 
@@ -120,7 +160,7 @@ and Cuda 11.7.
 
 If you use our work or build on top of it, use the following citation:
 ```bibtex
-@article(RadlNerfInternals2023,
+@article(Radl2023NerfInternals,
   title     = {{Analyzing the Internals of Neural Radiance Fields}},
   author    = {Radl, Lukas and Kurz, Andreas and Steinberger, Markus},
   journal   = {arXiv preprint arXiv:},
