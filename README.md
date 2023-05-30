@@ -11,8 +11,12 @@ for proposal network samples, as in Mip-NeRF 360.
 This repository follows the integration guidelines described [here](https://docs.nerf.studio/en/latest/developer_guides/new_methods.html) for custom methods within Nerfstudio. 
 ### 0. Install Nerfstudio dependencies
 [Follow these instructions](https://docs.nerf.studio/en/latest/quickstart/installation.html) to install Nerfstudio.
-### 1. Paste this directory into nerfstudio
-The folder structure should look like this:
+### 1. Clone our repo
+Navigate to the `nerfstudio` directory and run
+`
+git clone https://github.com/r4dl/nerfinternals.git
+`<br>
+The folder structure should now look like the following:
 ```
 nerfstudio
 ├── ...
@@ -34,12 +38,14 @@ nerfstudio
 │   └── ...
 └── ...
 ```
+Note that the `nerfstudio/outputs` directory is not created by default, but will be created if you train models.
 ### 2. Install as a python package
 Navigate to the `nerfstudio/nerfinternals` folder and run`python -m pip install -e .`
 
 ### 3. Run `ns-install-cli`
 Note: You should re-activate your environment.
-### 4. Run `ns-train -h`
+### 4. Run `ns-train -h` to verify the installation
+You should see a list of subcommands containing...
 ```console
 ╭─ subcommands ────────────────────────────────────────────────────────╮
 │ activation-mipnerf    Using Activations to infer Depth, Mip-NeRF.    │
@@ -48,15 +54,17 @@ Note: You should re-activate your environment.
 │ ...                                                                  │
 ╰──────────────────────────────────────────────────────────────────────╯ 
 ```
-You should see the new methods `activation_{nerf, mipnerf, nerfacto}`
+You should see the new methods `activation-{nerf, mipnerf, nerfacto}`
 
 ## Training
 To train a model (just as done in the paper), run:
 ```train
-ns-train activation_{nerf, mipnerf, nerfacto} --data <path_to_data> <other cl-args> <dataparser>
+ns-train activation-{nerf, mipnerf, nerfacto} --data <path_to_data> <other cl-args> <dataparser>
 ```
 ### Scripts
-As we need to set a lot of individual command line arguments, we provide scripts in the `nerfinternals/scripts/` directory to train models for all scenes of a dataset. <br>
+As we need to set a lot of individual command line arguments, we provide scripts in the `nerfinternals/scripts/` 
+directory to train models for all scenes of a dataset. <br>
+We provide a helper for each script, you can use `./launch_train_{blender, llff}_{nerf, nerfacto, nerfacto_NDC}.sh -h`.<br>
 Note that we used the configuration in `launch_train_llff_nerfacto.sh` for our results in the main paper. <br>
 For this, we used the `nerfstudio_data` dataparser, hence we need to use `ns-process-data` to convert the LLFF dataset to the required format.
 Run `ns-process-data -h` for further information about this command. We use the default arguments for `images`, and we use 

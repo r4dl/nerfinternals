@@ -2,9 +2,7 @@
 
 helpFunction_launch_train()
 {
-   echo "Usage: $0 -m <method_name> [-v <vis>] [-s] [<gpu_list>]"
-   echo -e "\t-m name of config to benchmark (e.g. mipnerf, instant_ngp)"
-   echo -e "\t-v <vis>: Visualization method. <vis> can be wandb or tensorboard. Default is wandb."
+   echo "Usage: $0 [-s] [<gpu_list>]"
    echo -e "\t-s: Launch a single training job per gpu."
    echo -e "\t<gpu_list> [OPTIONAL] list of space-separated gpu numbers to launch train on (e.g. 0 2 4 5)"
    exit 1 # Exit program after printing help
@@ -12,7 +10,14 @@ helpFunction_launch_train()
 
 vis="tensorboard"
 method_name="activation-nerfacto"
-single=true
+single=false
+while getopts "s:h" opt; do
+    case "$opt" in
+        s ) single=true ;;
+        ? ) helpFunction_launch_train
+          exit;;
+    esac
+done
 
 shift $((OPTIND-1))
 

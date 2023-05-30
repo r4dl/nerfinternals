@@ -2,7 +2,7 @@
 
 helpFunction_launch_train()
 {
-   echo "Usage: $0 -m <method_name> [-v <vis>] [-s] [<gpu_list>]"
+   echo "Usage: $0 -m <method_name> [-s] [<gpu_list>]"
    echo -e "\t-m name of config to benchmark (e.g. activation-mipnerf or activation-nerf)"
    echo -e "\t-s: Launch a single training job per gpu."
    echo -e "\t<gpu_list> [OPTIONAL] list of space-separated gpu numbers to launch train on (e.g. 0 2 4 5)"
@@ -11,10 +11,9 @@ helpFunction_launch_train()
 
 vis="tensorboard"
 single=false
-while getopts "m:v:s" opt; do
+while getopts "m:s" opt; do
     case "$opt" in
         m ) method_name="$OPTARG" ;;
-        v ) vis="$OPTARG" ;;
         s ) single=true ;;
         ? ) helpFunction ;;
     esac
