@@ -1,7 +1,7 @@
 # Analyzing the Internals of Neural Radiance Fields
 ### [Lukas Radl](https://scholar.google.com/citations?user=G_0ZsTIAAAAJ&hl=de)<sup>&ddagger;</sup>, [Andreas Kurz](https://online.tugraz.at/tug_online/visitenkarte.show_vcard?pPersonenGruppe=3&pPersonenId=D715516087483BD3)<sup>&ddagger;</sup>,[Markus Steinberger](https://www.markussteinberger.net/)<sup>&ddagger;</sup><br>
 #### <sup>&ddagger;</sup> Graz University of Technology <br>
-#### [Project Page]() | [Preprint]()
+#### [Project Page](nerfinternals.github.io) | [Preprint](https://arxiv.org/pdf/2306.00696.pdf)
 <img alt="Our Approach" src="images/v6_analysis.png" />
 We propose a novel method to extract densities from intermediate activations. Using our approach, we can skip the forward 
 pass of the coarse NeRF, in turn gaining efficiency. We find that this approach also works when using Mip-NeRF and even holds
@@ -171,7 +171,7 @@ If you use our work or build on top of it, use the following citation:
 @article(Radl2023NerfInternals,
   title     = {{Analyzing the Internals of Neural Radiance Fields}},
   author    = {Radl, Lukas and Kurz, Andreas and Steinberger, Markus},
-  journal   = {arXiv preprint arXiv:},
+  journal   = {arXiv preprint arXiv:2306.00696},
   year      = {2023},
 }
 ```
